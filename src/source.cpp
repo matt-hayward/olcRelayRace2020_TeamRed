@@ -58,10 +58,33 @@ public:
 
 
 public:
+	void load_map() {
+		olc::Sprite *map = new olc::Sprite("src/map.png");
+		
+		for(int i = 0; i < map -> width; i++) {
+			for(int j = 0; j < map -> height; j++) {
+				olc::Pixel pixel = map -> GetPixel(i, j);
+				if(pixel.b == 255) {
+					colliders.push_back(new Collider{"Something",
+					olc::vf2d(i, j),
+					olc::vf2d(1.0f, 1.0f), nullptr});
+					
+				}
+				
+			}
+		}
+		
+		std::cout << colliders.size() << std::endl;
+		
+		delete map;
+		
+	}
     bool OnUserCreate() override
     {
-        level.Load("../src/20592_rev.png");
+        level.Load("src/20592_rev.png");
         g = -32;
+		
+		load_map();
 
         player.position = { 33.0f, 9.5f };
         player.size = { 1, 1 };
@@ -85,7 +108,6 @@ public:
     {
         DrawDecal( { camera.position.x * -16, 0.0f }, level.Decal());
     //temp clamp before collision
-
 
 
         if (player.position.x < 20.0f) {
@@ -125,8 +147,8 @@ public:
 
         for (auto c : colliders)
         {
-          if (check_collision(playerCollider, *c))
-            std::cout << "collision with " << c->tag << std::endl;
+          if (check_collision(playerCollider, *c));
+            //std::cout << "collision with " << c->tag << std::endl;
 
           FillRectDecal({ (c->position.x - camera.position.x) * 16, 16 * (worldSize.y - c->position.y)}, c->size * 16.0f, olc::RED);
         }

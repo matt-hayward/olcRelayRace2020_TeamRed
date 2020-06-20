@@ -14,7 +14,7 @@ public:
     {
         sAppName = "RelayRace";
     }
-
+	float g;//gravity acceleration
     olc::Renderable level;
     gameObject player, camera;
     olc::vi2d tileSize, visibleTiles, worldSize; // 212 x 14
@@ -22,14 +22,14 @@ public:
 public:
     bool OnUserCreate() override
     {
-        level.Load("../src/20592_rev.png");
+        level.Load("../../src/20592_rev.png");
+		g = -32;
 
-
-        player.position = { 205.f, 0.0f };
+        player.position = { 33.0f, 9.5f };
         player.size = { 1, 1 };
-        player.velocity = { -16.0f, 0.0f };
+        player.velocity = { -0.0f, 0.0f };
 
-        camera.position = { 185, 0.0f };
+        camera.position = { 212 - 40, 0.0f };
         tileSize = { 16, 16 };
         worldSize = { 212, 14 };
         visibleTiles = { ScreenWidth() / tileSize.x, ScreenHeight() / tileSize.y };
@@ -40,22 +40,42 @@ public:
     bool OnUserUpdate(float fElapsedTime) override
     {
         DrawDecal( { camera.position.x * -16, 0.0f }, level.Decal());
-	
-        if (player.position.x - camera.position.x < -1 * (640 / 2) / 16.0f) {
-            camera.position.x -= player.velocity.x * fElapsedTime;
-        }
-	/*
+	//temp clamp before collision
+
+
+
+        if (player.position.x < 20.0f) {
+			camera.position.x += player.position.x - 20;
+			player.position.x = 20.0f;
+
+		}
+		if (player.position.x > 39.0f) {
+			player.position.x = 39.0f;
+		}
+
         // move character
         if (GetKey(olc::Key::LEFT).bHeld) {
-            player.position -= player.velocity * fElapsedTime;
-	    
+			player.velocity.x -=  fElapsedTime * 12.0 ;
+
         } else if (GetKey(olc::Key::RIGHT).bHeld) {
-            player.position += player.velocity * fElapsedTime;
+			player.velocity.x += fElapsedTime * 12.0;
         }
-	*/
-//	player.position -= player.velocity * fElapsedTime;
-        FillRectDecal({ player.position.x * 16, ScreenHeight() - 56.0f}, player.size * 16.0f);
-        
+		if (GetKey(olc::Key::SPACE).bPressed && player.velocity.y == 0.00) {
+			player.velocity.y = 20;
+		}
+
+		player.position += player.velocity * fElapsedTime;
+		player.velocity.y += g * fElapsedTime;
+		player.velocity.x += -1.5f * player.velocity.x * fElapsedTime;
+
+		if (player.position.y < 2.5)
+		{
+			player.velocity.y = 0.0;
+			player.position.y = 2.5;
+		}
+
+        FillRectDecal({ player.position.x * 16, 16 * (worldSize.y - player.position.y)}, player.size * 16.0f);
+
         return !GetKey(olc::Key::ESCAPE).bPressed;
     }
 
@@ -74,6 +94,6 @@ int main()
     {
         std::cout << "Failed to start PGE" << std::endl;
     }
-    
+
     return 0;
 }

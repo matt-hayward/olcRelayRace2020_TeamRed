@@ -147,9 +147,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\olcPixelGameEngine.h" />
+    <ClInclude Include="..\..\src\tileson.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\source.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\src\20592_rev.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -57,20 +57,23 @@ public:
 
     Collider playerCollider;
     std::vector<Collider*> colliders;
+	olc::Renderable mario;
+	olc::Renderable marioLeft;
 
 
 public:
     void load_map() {
-        olc::Sprite *map = new olc::Sprite("src/map.png");
+        olc::Sprite *map = new olc::Sprite("../../src/testmap.png");
 
-        for(int i = 0; i < map -> width; i++) {
-            for(int j = 0; j < map -> height; j++) {
-                olc::Pixel pixel = map -> GetPixel(i, j);
+        for(int i = 0; i < map -> width ; i+=16) {
+            for(int j = 0; j < map -> height ; j+=16) {
+                olc::Pixel pixel = map -> GetPixel(i + 8 ,j + 8);
 
                 std::string tag = "";
                 switch (RGB(pixel.r, pixel.g, pixel.b))
                 {
-                  case RGB(0, 0, 255): tag = map->height - j < 2 ? "floor" : "block"; break;
+					//map->height - j < 2 ? "floor" :
+                  case RGB(0, 0, 255): tag =  "block"; break;
                   case RGB(75, 255, 128): tag = "coin"; break;
                   default: break;
                 }
@@ -79,21 +82,19 @@ public:
                 {
                     colliders.push_back(new Collider{
                         tag,
-                        olc::vf2d(i, map->height - j),
+                        olc::vf2d((i / 16.0f), (float)(map->height / 16) - (j / 16.0f)),
                         olc::vf2d(1.0f, 1.0f), nullptr
                     });
                 }
             }
         }
 
-        std::cout << colliders.size() << std::endl;
-
         delete map;
 
     }
     bool OnUserCreate() override
     {
-        level.Load("src/20592_rev.png");
+        level.Load("../../src/20592_rev.png");
         g = -32;
 
         player.position = { 33.0f, 9.5f };
@@ -108,10 +109,13 @@ public:
 
         playerCollider = { "player", {0.0f, 0.0f}, {1.0f, 1.0f}, &player};
 
-        colliders =
+		mario.Load("../../src/mario.png");
+		marioLeft.Load("../../src/marioLeft.png");
+
+        /*colliders =
         {
           new Collider {std::string("coin"), olc::vf2d(200.0f, 3.0f), olc::vf2d(1.0f, 1.0f), nullptr},
-        };
+        };*/
 
         load_map();
 
@@ -124,6 +128,7 @@ public:
       {
         if (check_collision(playerCollider, *c))
         {
+			std::cout << "COLLIDER FUNCTION\n";
           if (c->tag == "coin")
           {
             score += 100;
@@ -146,9 +151,13 @@ public:
         DrawDecal( { camera.position.x * -16, 0.0f }, level.Decal());
     //temp clamp before collision
 
+		//olc::vf2d nextPosition = player.position;
+
+		std::cout << "Camera: " << camera.position.x << std::endl;
+		
         if (player.position.x < 20.0f) {
             camera.position.x += player.position.x - 20;
-            player.position.x = 20.0f;
+			player.position.x = 20.0f;
 
         }
         if (player.position.x > 39.0f) {
@@ -185,9 +194,21 @@ public:
         if (check_collisions())
         {
           // top or bottom collision (depends Y speed)
+			std::cout << "COLLISION Y\n";
           player.position = previousPosition;
           player.velocity.y = 0;
         }
+
+		// check death from falling
+		if (player.position.y < 0) {
+			camera.position = { 212 - 40, 0.0f };
+			player.position = { 33.0f, 9.5f };
+			player.velocity = {0.0f, 0.0f};
+		}
+
+		if (camera.position.x < -7) {
+			DrawStringDecal({ 10.0f, 10.0f }, "YOU WIN!!!");
+		}
 
         // std::cout << playerCollider.position.x << ' ' << playerCollider.position.y << std::endl;
 
@@ -197,13 +218,14 @@ public:
         //     player.position.y = 2.5;
         // }
 
-        FillRectDecal({ player.position.x * 16, 16 * (worldSize.y - player.position.y)}, player.size * 16.0f);
+		DrawDecal({ player.position.x * 16, 16 * (worldSize.y - player.position.y) }, player.velocity.x >= 0 ? mario.Decal() : marioLeft.Decal());
+        //FillRectDecal({ player.position.x * 16, 16 * (worldSize.y - player.position.y)}, player.size * 16.0f);
 
-        for (auto c : colliders)
+        /*for (auto c : colliders)
         {
           if (c->tag == "_destroyed_") continue;
           FillRectDecal({ (c->position.x - camera.position.x) * 16, 16 * (worldSize.y - c->position.y)}, c->size * 16.0f, olc::RED);
-        }
+        }*/
 
         return !GetKey(olc::Key::ESCAPE).bPressed;
     }
